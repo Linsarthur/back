@@ -67,3 +67,22 @@ export async function deleteUser(req, res) {
         return res.status(400).json({ error: error.message });
     }
 }
+
+export async function login (dados) {
+    try {
+        const { user_email, user_password } = dados;
+        const user = await prisma.user.findUnique({
+            where: { user_email }
+        });
+        if (!user) {
+            throw new Error("User not found");
+        }
+        const isValid = await bcrypt.compare(user_password, user.user_password);
+        if (!isValid) {
+            throw new Error("Invalid password");
+        }
+        return user;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
