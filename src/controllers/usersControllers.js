@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { prisma } from "../services/index.js";
 export async function getUsers() {
     try {
@@ -81,7 +82,8 @@ export async function login (dados) {
         if (!isValid) {
             throw new Error("Invalid password");
         }
-        return user;
+        const token = jwt.sign({user_id: user.user_id}, process.env.JWT_SECRET)
+        return {user, token};
     } catch (error) {
         throw new Error(error.message);
     }
