@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { prisma } from "../services/index.js";
 export async function getUsers() {
     try {
@@ -18,12 +19,14 @@ export async function getUserById(id) {
 }
 
 export async function createUser(req, res) {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(req.body.user_password, saltRounds);
     try {
-        const { user_name, user_password, user_email } = req.body;
+        const { user_name, user_email } = req.body;
         const user = await prisma.user.create({
             data: {
                 user_name,
-                user_password,
+                user_password: hashedPassword,
                 user_email
             }
         });
@@ -53,10 +56,11 @@ export async function editUser(req, res) {
 export async function deleteUser(req, res) {
     try {
         const { id } = req.params;
-       const user = await prisma.user.delete({
+        const user = await prisma.user.delete({
             where: { user_id: Number(id) }
         });
-        return res.status(200).json({message: "User deleted successfully",
+        return res.status(200).json({
+            message: "User deleted successfully",
             user
         });
     } catch (error) {
